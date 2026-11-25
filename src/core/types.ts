@@ -137,6 +137,7 @@ export interface TrackPoint {
   rpm: number;
   delta: number;
   squat: number;
+  ukc: number;
   depth: number;
   /** 对地航速 m/s */
   sog: number;

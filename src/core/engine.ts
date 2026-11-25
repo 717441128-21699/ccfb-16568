@@ -44,6 +44,7 @@ export interface Scenario {
   title: string;
   brief: string;
   shipId: string;
+  portId: string;
   start: { x: number; y: number; psi: number; u: number };
   berth: BerthDef;
   channel?: ChannelDef;
@@ -91,6 +92,7 @@ export class Simulator {
     X: 0, Y: 0, N: 0, wind: { X: 0, Y: 0, N: 0 }, bank: { X: 0, Y: 0, N: 0 }, tugs: { X: 0, Y: 0, N: 0 },
   };
   shallowNow: ShallowFactors;
+  private trafficHome = new Map<string, { x: number; y: number }>();
 
   constructor(ship: ShipParams, scenario: Scenario, env: Environment, opts: SimulatorOptions = {}) {
     this.ship = ship;
@@ -119,6 +121,7 @@ export class Simulator {
     };
     const h = env.depthAt(this.state.x, this.state.y);
     this.shallowNow = shallowFactors(ship, h, scenario.start.u);
+    for (const t of env.traffic) this.trafficHome.set(t.id, { x: t.x, y: t.y });
     this.recordTrack(true);
   }
 
@@ -142,10 +145,10 @@ export class Simulator {
   }
 
   private targetRps(level: TelegraphLevel): number {
-    const tab = this.ship.aheadRps;
-    if (level >= 0) return tab[level];
+    const tab: readonly number[] = this.ship.aheadRps;
+    if (level >= 0) return tab[level] ?? 0;
     // 倒车各档取正车对应档的 0.85 倍
-    return -tab[-level] * 0.85;
+    return -(tab[-level] ?? 0) * 0.85;
   }
 
   private substep(dt: number): void {
@@ -163,6 +166,18 @@ export class Simulator {
     else if (s.delta > cmd) s.delta = Math.max(cmd, s.delta - rate);
 
     for (const rt of this.tugs) updateTug(rt, this.order.tugs[rt.def.id], dt);
+
+    // --- 交通船沿其航向匀速移动，驶出 6km 外后从航道另一端循环 ---
+    for (const t of this.env.traffic) {
+      t.x += Math.cos(t.psi) * t.speed * dt;
+      t.y += Math.sin(t.psi) * t.speed * dt;
+      const d0 = Math.hypot(t.x - this.scenario.start.x, t.y - this.scenario.start.y);
+      if (d0 > 6000) {
+        // 回到初始方位的远端，重新交会
+        t.x = this.trafficHome.get(t.id)?.x ?? t.x;
+        t.y = this.trafficHome.get(t.id)?.y ?? t.y;
+      }
+    }
 
     // --- 浅水因子（步长冻结） ---
     const depth = this.env.depthAt(s.x, s.y);
@@ -394,6 +409,7 @@ export class Simulator {
       delta: s.delta,
       squat: s.squat,
       depth: this.env.depthAt(s.x, s.y),
+      ukc: s.ukc,
       sog: Math.hypot(vx, vy),
       cog: Math.atan2(vy, vx),
     });

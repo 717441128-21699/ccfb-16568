@@ -39,6 +39,7 @@ export const SCENARIOS: Scenario[] = [
     title: '临澜河港 · 杂货船靠泊',
     brief: '汊河号杂货船乘潮进港，航道窄且浅（h/T≈1.22），注意浅水舵效下降与北岸岸壁吸力，三拖轮协助靠 1 号泊位。',
     shipId: 'cargo-15k',
+    portId: 'linlan',
     start: { x: -1200, y: 0, psi: 0, u: 4.6 },
     berth: {
       id: 'linlan-1',
@@ -57,8 +58,9 @@ export const SCENARIOS: Scenario[] = [
   {
     id: 'task-linlan-bulker',
     title: '临澜河港 · 散货船极限吃水',
-    brief: '苍岭号散货船吃水 12m，港池水深仅 11.5m —— 需控速减沉，速度稍高就会触底。体会 squat 与制动距离的矛盾。',
+    brief: '苍岭号散货船吃水 12m，港池水深仅 13.2m（h/T≈1.1）—— 进池后必须控速减沉，速度稍高 squat 增大就会触底。体会浅水下沉与制动距离的矛盾。',
     shipId: 'bulker-50k',
+    portId: 'linlan',
     start: { x: -1200, y: 0, psi: 0, u: 4.2 },
     berth: {
       id: 'linlan-2',
@@ -79,6 +81,7 @@ export const SCENARIOS: Scenario[] = [
     title: '东港新港 · 集装箱船交会进港',
     brief: '云衡号 8000TEU 进港，途中与出港集装箱船交会，港池口门横流 1.2kn，注意船间吸引与流压。',
     shipId: 'container-8k',
+    portId: 'donggang',
     start: { x: -2400, y: 0, psi: 0, u: 6.2 },
     berth: {
       id: 'donggang-a3',
@@ -105,6 +108,7 @@ export const SCENARIOS: Scenario[] = [
     title: '东港新港 · 大风散货靠泊',
     brief: '苍岭号在 7 级横风中靠泊，风压把船压向码头，拖轮要顶住风，靠泊角度与速度控制是关键。',
     shipId: 'bulker-50k',
+    portId: 'donggang',
     start: { x: -2400, y: 0, psi: 0, u: 4.8 },
     berth: {
       id: 'donggang-b1',
@@ -125,6 +129,7 @@ export const SCENARIOS: Scenario[] = [
     title: '黑石屿油港 · VLCC 大风浪靠泊',
     brief: '鲸海号 30 万吨油轮进岛港，万吨惯性带来超长冲程，岛式码头两侧都有岸壁效应，160t 级三拖轮协靠。',
     shipId: 'vlcc-300k',
+    portId: 'heishi',
     start: { x: -3400, y: 0, psi: 0, u: 5.0 },
     berth: {
       id: 'heishi-oil-1',
@@ -157,6 +162,7 @@ export function practiceScenario(shipId: string, portId: string): Scenario {
     title: `自由操练 · ${port.name}`,
     brief: '自由操纵练习：可做旋回圈、冲程、靠泊演练，不评分。',
     shipId,
+    portId,
     start: { x: start.x + 200, y: start.y, psi, u: 0 },
     berth: {
       id: 'practice-berth',
@@ -167,7 +173,7 @@ export function practiceScenario(shipId: string, portId: string): Scenario {
     channel: channelEdges(portId),
     wind: { speed: 0, dirFrom: 0 },
     current: { speed: 0, dirTo: 0 },
-    timeLimit: 99999,
+    timeLimit: 86400,
     traffic: [],
     depthPolygons: [],
     banks: [],

@@ -51,11 +51,11 @@ function linlanPort(): PortDef {
   ];
   // 码头：港池北岸（船贴北侧，码头法线朝南指向水域）
   const depthZones = [
-    // 港池浅水区 11.5m
-    { depth: 11.5, poly: basin },
-    // 航道浅槽：沿中线的窄多边形，10.5m
+    // 港池浅水区 13.2m（散货船吃水 12m，h/T≈1.1，控速减沉是关键）
+    { depth: 13.2, poly: basin },
+    // 航道乘潮水深 14.5m
     {
-      depth: 10.5,
+      depth: 14.5,
       poly: channelStrip(fairway, fairwayHalfWidth),
     },
   ];

@@ -47,6 +47,7 @@ function baseScenario(ship: ShipParams): Scenario {
     title: 'calib',
     brief: '',
     shipId: ship.id,
+    portId: 'open',
     start: { x: 0, y: 0, psi: 0, u: 0 },
     berth: { id: 'b', name: 'b', x1: 0, y1: -9999, x2: 1, y2: -9999, nx: 0, ny: 1 },
     wind: { speed: 0, dirFrom: 0 },
@@ -262,4 +263,7 @@ console.log('\n===== 附加：浅水舵效与下沉检查 =====');
 
 const passed = results.filter((r) => r.pass).length;
 console.log(`\n===== 结果：${passed}/${results.length} 通过 =====`);
-if (passed < results.length) process.exitCode = 1;
+if (passed < results.length) {
+  const g = globalThis as unknown as { process?: { exitCode?: number } };
+  if (g.process) g.process.exitCode = 1;
+}
