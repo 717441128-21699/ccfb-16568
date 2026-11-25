@@ -41,7 +41,7 @@ function linlanPort(): PortDef {
     { x: 600, y: 60 },
     { x: 1100, y: 120 },
   ];
-  const fairwayHalfWidth = 90;
+  const fairwayHalfWidth = 115;
   // 港池：航道末端东南侧的矩形回转池
   const basin: Pt[] = [
     { x: 1000, y: -260 },
@@ -79,7 +79,7 @@ function linlanPort(): PortDef {
     fairwayHalfWidth,
     basin,
     depthZones,
-    offshoreDepth: 7.5,
+    offshoreDepth: 16,
     bankLines,
     land,
   };

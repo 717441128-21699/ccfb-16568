@@ -213,12 +213,12 @@ export class Simulator {
     s.v += (dt / 6) * (k1.dv + 2 * k2.dv + 2 * k3.dv + k4.dv);
     s.r += (dt / 6) * (k1.dr + 2 * k2.dr + 2 * k3.dr + k4.dr);
 
-    // 触底后强烈减速摩擦
+    // 触底摩擦：强减速但可恢复（加车可自行脱浅），不永久锁死
     if (sf.grounded) {
-      const friction = Math.exp(-dt * 0.35);
+      const friction = Math.exp(-dt * 0.12);
       s.u *= friction;
-      s.v *= friction;
-      s.r *= friction;
+      s.v *= Math.exp(-dt * 0.16);
+      s.r *= Math.exp(-dt * 0.16);
     }
     // 锚泊制动（应急锚，纵向阻力 + 回转阻尼）
     if (this.order.anchor) {
@@ -316,18 +316,26 @@ export class Simulator {
   private detectBerth(): void {
     const b = this.scenario.berth;
     const s = this.state;
-    const q = pointToSegment(s.x, s.y, b.x1, b.y1, b.x2, b.y2);
-    // 船中到码头线距离
-    const gap = q.dist;
-    // 沿码头法向的接近速度（船体系 v 在法向上的投影）
     const c = Math.cos(s.psi);
     const sn = Math.sin(s.psi);
+    // 沿船长取船首、船中、船尾三点，找离码头线最近的点
+    const L = this.ship.L;
+    const offsets = [0.45 * L, 0, -0.45 * L];
+    let minGap = Infinity;
+    for (const off of offsets) {
+      const px = s.x + c * off;
+      const py = s.y + sn * off;
+      const q = pointToSegment(px, py, b.x1, b.y1, b.x2, b.y2);
+      minGap = Math.min(minGap, q.dist);
+    }
+    const gap = minGap;
+    // 沿码头法向的接近速度（大地系速度在法向上的投影）
     const vx = s.u * c - s.v * sn;
     const vy = s.u * sn + s.v * c;
     const approach = -(vx * b.nx + vy * b.ny); // 朝向码头为正
     const beam = this.ship.B / 2;
 
-    if (gap < beam + 3) {
+    if (gap < beam + 4) {
       const sog = Math.hypot(s.u, s.v);
       if (approach > BERTHING_SPEED_LIMIT || sog > BERTHING_SPEED_LIMIT * 1.6) {
         this.collisionCount++;
@@ -338,9 +346,9 @@ export class Simulator {
           x: s.x,
           y: s.y,
         });
-        // 弹性反冲
-        s.u *= 0.7;
-        s.v *= 0.5;
+        // 弹性反冲：法向速度反向衰减
+        s.v *= 0.4;
+        s.u *= 0.8;
       } else if (!this.berthed) {
         this.berthed = true;
         this.events.push({
